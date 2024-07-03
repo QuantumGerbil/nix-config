@@ -2,7 +2,7 @@
 # Use this to configure your system environment (it replaces /etc/nixos/configuration.nix)
 {
   inputs,
-  outputs,
+#  outputs,
   lib,
   config,
   pkgs,
@@ -28,9 +28,9 @@
     # You can add overlays here
     overlays = [
       # Add overlays your own flake exports (from overlays and pkgs dir):
-      outputs.overlays.additions
-      outputs.overlays.modifications
-      outputs.overlays.unstable-packages
+#      outputs.overlays.additions
+#      outputs.overlays.modifications
+#      outputs.overlays.unstable-packages
 
       # You can also add overlays exported from other flakes:
       # neovim-nightly-overlay.overlays.default
@@ -59,14 +59,88 @@
       #flake-registry = "";
       # Workaround for https://github.com/NixOS/nix/issues/9574
       nix-path = config.nix.nixPath;
+      auto-optimise-store = true;
     };
     # Opinionated: disable channels
     channel.enable = false;
+
+    optimise.automatic = true;
+    gc = {
+      automatic = true;
+      dates = "weekly";
+      options = "--delete-older-than 14d";
+    };
 
     # Opinionated: make flake registry and nix path match flake inputs
     registry = lib.mapAttrs (_: flake: {inherit flake;}) flakeInputs;
     nixPath = lib.mapAttrsToList (n: _: "${n}=flake:${n}") flakeInputs;
   };
+
+  programs = {
+    hyprland.enable = true;
+    hyprlock.enable = true;
+    thunar.enable = true;
+    xfconf.enable = true;
+    thunar.plugins = with pkgs.xfce; [
+      thunar-archive-plugin
+      thunar-volman
+    ];
+    mtr.enable = true;
+    gnupg.agent = {
+      enable = true;
+      enableSSHSupport = true;
+    };
+    steam = {
+      enable = true;
+      remotePlay.openFirewall = true; # Open ports in the firewall for Steam Remote Play
+      dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedi>
+      localNetworkGameTransfers.openFirewall = true; # Open ports in the firewall for S>
+    };
+    gamescope.enable = true;
+  };
+  services.gvfs.enable = true; # Mount, trash, and other functionalities 
+  services.tumbler.enable = true; # Thumbnail support for images 
+  services.xserver.enable = true; services.xserver.videoDrivers = [ "amdgpu" ]; 
+  services.xserver.xkb.layout = "us"; services.printing.enable = true; 
+  services.displayManager.sddm.enable = true; services.pipewire = {
+    enable = true;
+    pulse.enable = true;
+    jack.enable = true;
+  };
+  services.blueman.enable = true;
+  # This setups a SSH server. Very important if you're setting up a headless system.
+  # Feel free to remove if you don't need it.
+  services.openssh = {
+    enable = true;
+    settings = {
+      # Opinionated: forbid root login through SSH.
+      PermitRootLogin = "no";
+      # Opinionated: use keys only.
+      # Remove if you want to SSH using passwords
+      PasswordAuthentication = false;
+    };
+  };
+
+  environment.sessionVariables = rec {
+    XDG_CACHE_HOME  = "$HOME/.cache";
+    XDG_CONFIG_HOME = "$HOME/.config";
+    XDG_DATA_HOME   = "$HOME/.local/share";
+    XDG_STATE_HOME  = "$HOME/.local/state";
+    NIXOS_OZONE_WL  = "1";
+    WLR_NO_HARDWARE_CURSORS = "1";
+
+    # Not officially in the specification
+    XDG_BIN_HOME    = "$HOME/.local/bin";
+    PATH = [ 
+      "${XDG_BIN_HOME}"
+    ];
+  };
+
+  # Fonts
+  fonts.packages = with pkgs; [
+    jetbrains-mono
+    nerd-font-patcher
+  ];
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
@@ -82,18 +156,6 @@
   time.timeZone = "America/Chicago";
 
   i18n.defaultLocale = "en_US.UTF-8";
-  #console = {
-  #  font = "Lat2-Terminus16";
-  #  keyMap = "us";
-  #  useXkbConfig = true; # use xkb.options in tty.
-  #};
-
-  services.xserver.enable = true;
-  services.xserver.videoDrivers = [ "amdgpu" ];
-  services.xserver.xkb.layout = "us";
-  services.printing.enable = true;
-  services.displayManager.sddm.enable = true;
-  programs.hyprland.enable = true;
   
   security.sudo = {
   enable = true;
@@ -116,22 +178,11 @@
     }];
   };
 
-  services.pipewire = {
-    enable = true;
-    pulse.enable = true;
-    jack.enable = true;
-  };
-
   environment.systemPackages = with pkgs; [
     git
     wget
+    bubblewrap
   ];
-
-  programs.mtr.enable = true;
-  programs.gnupg.agent = {
-    enable = true;
-    enableSSHSupport = true;
-  };
 
   hardware.graphics = {
     #driSupport = true;
@@ -141,17 +192,7 @@
     ];
   };
 
-  programs.steam = {
-    enable = true;
-    remotePlay.openFirewall = true; # Open ports in the firewall for Steam Remote Play
-    dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
-    localNetworkGameTransfers.openFirewall = true; # Open ports in the firewall for Steam Local Network Game Transfers
-  };
-
-  programs.gamescope.enable = true;
-
   hardware.bluetooth.enable = true;
-  services.blueman.enable = true;
 
   #system.copySystemConfiguration = true;
 
@@ -162,19 +203,6 @@
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHV3qLddiS8FSfJSm7q+nSyPTBDax6TjlWS02AL6pmtL bpmorgan@pm.me"
       ];
       extraGroups = ["wheel" "audio" "networkmanager" "input"];
-  };
-
-  # This setups a SSH server. Very important if you're setting up a headless system.
-  # Feel free to remove if you don't need it.
-  services.openssh = {
-    enable = true;
-    settings = {
-      # Opinionated: forbid root login through SSH.
-      PermitRootLogin = "no";
-      # Opinionated: use keys only.
-      # Remove if you want to SSH using passwords
-      PasswordAuthentication = false;
-    };
   };
 
   networking.extraHosts = 

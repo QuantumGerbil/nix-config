@@ -2,7 +2,7 @@
 # Use this to configure your home environment (it replaces ~/.config/nixpkgs/home.nix)
 {
   inputs,
-  outputs,
+#  outputs,
   lib,
   config,
   pkgs,
@@ -28,9 +28,9 @@ in
     # You can add overlays here
     overlays = [
       # Add overlays your own flake exports (from overlays and pkgs dir):
-      outputs.overlays.additions
-      outputs.overlays.modifications
-      outputs.overlays.unstable-packages
+ #     outputs.overlays.additions
+ #     outputs.overlays.modifications
+ #     outputs.overlays.unstable-packages
 
       # You can also add overlays exported from other flakes:
       # neovim-nightly-overlay.overlays.default
@@ -61,6 +61,8 @@ in
     hyprland
     hypridle
     hyprpaper
+    dunst
+    waybar
     pwvucontrol
     blender
     gimp
@@ -74,13 +76,19 @@ in
     aagl.honkers-launcher
     aagl.wavey-launcher
     wofi
-    dolphin
+    taskwarrior
+    vit
+    cool-retro-term
+    steamcmd
+    tidal-hifi
+    lutris
   ];
   xdg.enable = true;
   programs.firefox.enable = true;
 
   # Enable home-manager and git
   programs.home-manager.enable = true;
+
   programs.git.enable = true;
 #  programs.hyprland.enable = true;
   programs.hyprlock.enable = true;
