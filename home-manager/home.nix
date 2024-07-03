@@ -98,6 +98,12 @@ in
   # Nicely reload system units when changing configs
   systemd.user.startServices = "sd-switch";
 
+  programs.git = {
+    #enable = true;
+    userName = "QuantumGerbil";
+    userEmail = "bpmorgan@pm.me";
+  };
+
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
   home.stateVersion = "24.05";
 }
