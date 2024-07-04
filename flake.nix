@@ -9,6 +9,9 @@
     #nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     # Also see the 'unstable-packages' overlay at 'overlays/default.nix'.
 
+    catppuccin.url = "github:catppuccin/nix";
+    hyprcursor-phinger.url = "github:jappie3/hyprcursor-phinger";
+
     # Home manager
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
@@ -17,6 +20,8 @@
   outputs = {
     self,
     nixpkgs,
+    catppuccin,
+    hyprcursor-phinger,
     home-manager,
     ...
   } @ inputs: let
@@ -50,6 +55,7 @@
     nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
         specialArgs = {inherit inputs;};
         modules = [
+          catppuccin.nixosModules.catppuccin
           # > Our main nixos configuration file <
           ./nixos/configuration.nix
           #./nixos/programs.nix
@@ -62,6 +68,8 @@
         pkgs = nixpkgs.legacyPackages.x86_64-linux; # Home-manager requires 'pkgs' instance
         extraSpecialArgs = {inherit inputs;};
         modules = [
+          hyprcursor-phinger.homeManagerModules.hyprcursor-phinger
+          catppuccin.homeManagerModules.catppuccin
           # > Our main home-manager configuration file <
           ./home-manager/home.nix
         ];
